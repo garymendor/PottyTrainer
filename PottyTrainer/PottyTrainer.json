@@ -1,7 +1,7 @@
 {
-  "Author": "your name here",
-  "Name": "Sample Plugin",
-  "Punchline": "A short one-liner that shows up in /xlplugins.",
+  "Author": "Munene Mune",
+  "Name": "Potty Trainer",
+  "Punchline": "For Warriors of Light who want to train themselves to use the bathroom... or not!",
   "Description": "A description that shows up in /xlplugins. List any major slash-command(s).",
   "ApplicableVersion": "any",
   "Tags": [
