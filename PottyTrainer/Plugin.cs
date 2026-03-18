@@ -2,6 +2,7 @@
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using System.IO;
+using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using PottyTrainer.Windows;
@@ -66,7 +67,7 @@ public sealed class Plugin : IDalamudPlugin
         Log.Information($"==={PluginInterface.Manifest.Name} starting - make sure you know where the potty is!===");
 
         ClientState.Login += Simulator.Start;
-        ClientState.Logout += Simulator.Stop;
+        ClientState.Logout += (_, _) => Simulator.Stop();
         if (ClientState.IsLoggedIn)
         {
             Log.Debug("Already logged in, starting potty simulation.");
@@ -98,10 +99,14 @@ public sealed class Plugin : IDalamudPlugin
             case "check":
                 PottyCheck();
                 return;
+            case "check ooc":
+                PottyCheck(true);
+                return;
             case "help":
                 ChatGui.Print("Available commands:", "PottyTrainer", 25);
                 ChatGui.Print("/potty - Brings up the potty UI.");
                 ChatGui.Print("/potty check - Check if you need to use the potty.");
+                ChatGui.Print("/potty check ooc - Check if you need to use the potty (the actual truth).");
                 ChatGui.Print("/potty pee - Urinate now (if you can).");
                 ChatGui.Print("/potty poop - Defecate now (if you can).");
                 return;
@@ -132,7 +137,7 @@ public sealed class Plugin : IDalamudPlugin
             ChatGui.Print("You don't feel the urge to pee right now.", "PottyTrainer", 25);
             return;
         }
-        Simulator.Pee(PlayerState, Configuration.GetCurrentCharacter()!);
+        Simulator.Pee(PlayerState, Configuration.GetCurrentCharacter()!, true);
     }
 
     private void Poop()
@@ -147,10 +152,10 @@ public sealed class Plugin : IDalamudPlugin
             ChatGui.Print("You don't feel the urge to poop right now.", "PottyTrainer", 25);
             return;
         }
-        Simulator.Poop(PlayerState, Configuration.GetCurrentCharacter()!);
+        Simulator.Poop(PlayerState, Configuration.GetCurrentCharacter()!, true);
     }
 
-    private void PottyCheck()
+    private void PottyCheck(bool outOfCharacter = false)
     {
         var character = Configuration.GetCurrentCharacter();
         if (character == null || !character.Active)
@@ -158,8 +163,43 @@ public sealed class Plugin : IDalamudPlugin
             ChatGui.Print("Your character's bodily functions aren't active right now.");
             return;
         }
-        ChatGui.Print(Simulator.GetChatUrgeMessage(PlayerState, character.CurrentBladderUrgeState, true));
-        ChatGui.Print(Simulator.GetChatUrgeMessage(PlayerState, character.CurrentBowelUrgeState, false));
+
+        var message = new SeStringBuilder()
+            .Add(Simulator.GetPlayerPayload(PlayerState))
+            .AddText(" checks if they need to go potty...")
+            .BuiltString;
+        ChatGui.Print(message, "PottyTrainer", 25);
+        if (outOfCharacter)
+        {
+            var actualPeeUrge = Simulator.ComputeUrgeState(character.CurrentBladder, 70);
+            var peeMessage = Simulator.GetChatUrgeMessage(PlayerState, character.CurrentBladderUrgeState, true, actualPeeUrge);
+            ChatGui.Print(peeMessage);
+            if (character.CurrentBladderAwarenessThreshold >= 100)
+            {
+                ChatGui.Print(new SeStringBuilder()
+                    .AddUiForeground(32)
+                    .AddText("(They will eventually pee themselves without warning!)")
+                    .AddUiForegroundOff()
+                    .BuiltString);
+            }
+
+            var actualPoopUrge = Simulator.ComputeUrgeState(character.CurrentBowel, 70);
+            var poopMessage = Simulator.GetChatUrgeMessage(PlayerState, character.CurrentBowelUrgeState, false, actualPoopUrge);
+            ChatGui.Print(poopMessage);
+            if (character.CurrentBowelAwarenessThreshold >= 100)
+            {
+                ChatGui.Print(new SeStringBuilder()
+                    .AddUiForeground(32)
+                    .AddText("(They will eventually poop themselves without warning!)")
+                    .AddUiForegroundOff()
+                    .BuiltString);
+            }
+        }
+        else
+        {
+            ChatGui.Print(Simulator.GetChatUrgeMessage(PlayerState, character.CurrentBladderUrgeState, true));
+            ChatGui.Print(Simulator.GetChatUrgeMessage(PlayerState, character.CurrentBowelUrgeState, false));
+        }
     }
     
     public void ToggleConfigUi() => ConfigWindow.Toggle();

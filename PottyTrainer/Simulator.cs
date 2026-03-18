@@ -3,14 +3,23 @@ using System.Threading;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface.Colors;
+using Dalamud.IoC;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Common.Math;
 using PottyTrainer.Configuration;
-using Serilog;
 
 namespace PottyTrainer;
 
-public class Simulator : IDisposable
+public interface ISimulator : IDisposable
+{
+    void Start();
+    void Stop();
+    void Pee(IPlayerState playerState, Character character, bool isVoluntary = false);
+    void Poop(IPlayerState playerState, Character character, bool isVoluntary = false);
+}
+
+[PluginInterface]
+public class Simulator : ISimulator
 {
     private readonly Plugin plugin;
 
@@ -25,7 +34,7 @@ public class Simulator : IDisposable
         this.plugin = plugin;
     }
 
-    public bool IsActive()
+    private bool IsActive()
     {
         var currentCharacter = plugin.Configuration.GetCurrentCharacter();
         return currentCharacter?.Active ?? false;
@@ -42,7 +51,7 @@ public class Simulator : IDisposable
             return;
         }
 
-        Stop(0, 0);
+        Stop();
 
         Plugin.Log.Debug("Starting potty simulation.");
         ScheduleNextTick();
@@ -57,7 +66,7 @@ public class Simulator : IDisposable
             cancellationToken: cancellationTokenSource.Token);
     }
 
-    public void Stop(int type, int code)
+    public void Stop()
     {
         if (cancellationTokenSource != null)
         {
@@ -147,10 +156,11 @@ public class Simulator : IDisposable
         ScheduleNextTick(); // Schedule next tick
     }
 
-    public void Pee(IPlayerState playerState, Character character)
+    public void Pee(IPlayerState playerState, Character character, bool isVoluntary = false)
     {
         var message = new SeStringBuilder()
             .Add(GetPlayerPayload(playerState))
+            .AddText(isVoluntary ? "" : " can't hold it anymore and ")
             .AddText($" is now ")
             .AddUiForeground(25)
             .AddUiGlow(30)
@@ -169,10 +179,11 @@ public class Simulator : IDisposable
         character.CurrentBladderUrgeState = UrgeState.None;
     }
 
-    public void Poop(IPlayerState playerState, Character character)
+    public void Poop(IPlayerState playerState, Character character, bool isVoluntary = false)
     {
         var message = new SeStringBuilder()
             .Add(GetPlayerPayload(playerState))
+            .AddText(isVoluntary ? "" : " can't hold it anymore and ")
             .AddText($" is now ")
             .AddUiForeground(30)
             .AddUiGlow(25)
@@ -211,7 +222,7 @@ public class Simulator : IDisposable
         return UrgeState.Warning;
     }
 
-    public static SeString GetChatUrgeMessage(IPlayerState playerState, UrgeState urgeState, bool isPeeing)
+    public static SeString GetChatUrgeMessage(IPlayerState playerState, UrgeState urgeState, bool isPeeing, UrgeState? actualUrgeState = null)
     {
         var playerPayload = GetPlayerPayload(playerState);
         switch (urgeState)
@@ -239,17 +250,68 @@ public class Simulator : IDisposable
                     .BuiltString;
             case UrgeState.None:
             default:
-                return new SeStringBuilder()
-                    .Add(playerPayload)
-                    .AddText($" doesn't need to {(isPeeing ? "pee" : "poop")}.")
-                    .BuiltString;
+                if (actualUrgeState != null)
+                {
+                    if (actualUrgeState.Value != urgeState)
+                    {
+                        return new SeStringBuilder()
+                            .Add(playerPayload)
+                            .AddText($" thinks they don't need to {(isPeeing ? "pee" : "poop")} right now - but actually they ")
+                            .Append(GetTrueUrgeMessage(actualUrgeState.Value, isPeeing))
+                            .AddText(".")
+                            .BuiltString;
+                    } 
+                    return new SeStringBuilder()
+                        .Add(playerPayload)
+                        .AddText($" truly doesn't need to {(isPeeing ? "pee" : "poop")}.")
+                        .BuiltString;
+                }
+                else 
+                {
+                    return new SeStringBuilder()
+                        .Add(playerPayload)
+                        .AddText($" doesn't need to {(isPeeing ? "pee" : "poop")}.")
+                        .BuiltString;
+                }
         }
     }
 
-    private static PlayerPayload GetPlayerPayload(IPlayerState playerState)
+    public static PlayerPayload GetPlayerPayload(IPlayerState playerState)
     {
         return new PlayerPayload(playerState.CharacterName, playerState.HomeWorld.Value.RowId);
     }
+
+    public static SeString GetTrueUrgeMessage(UrgeState urgeState, bool isPeeing)
+    {
+        var message = new SeStringBuilder();
+        switch(urgeState)
+        {
+            case UrgeState.Warning:
+                message
+                    .AddUiForeground(25)
+                    .AddText($"need to {(isPeeing ? "pee" : "poop")} a little bit.")
+                    .AddUiForegroundOff();
+                break;
+            case UrgeState.Danger:
+                message
+                    .AddUiForeground(32)
+                    .AddText($"urgently need to {(isPeeing ? "pee" : "poop")}.")
+                    .AddUiForegroundOff();
+                break;
+            case UrgeState.Bursting:
+                message
+                    .AddUiForeground(17)
+                    .AddText($"are about to {(isPeeing ? "pee" : "poop")} themselves any moment!")
+                    .AddUiForegroundOff();
+                break;
+            case UrgeState.None:
+            default:
+                message.AddText($"really don't need to {(isPeeing ? "pee" : "poop")} right now.");
+                break;
+        }
+        return message.BuiltString;
+    }
+
 
     public static string GetUrgeMessage(UrgeState urgeState, bool isPeeing)
     {
@@ -285,7 +347,7 @@ public class Simulator : IDisposable
         {
             if (disposing)
             {
-                Stop(0, 0);
+                Stop();
             }
 
             disposedValue = true;
