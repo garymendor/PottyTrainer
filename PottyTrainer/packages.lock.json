@@ -2,6 +2,16 @@
   "version": 1,
   "dependencies": {
     "net10.0-windows7.0": {
+      "CheapLoc": {
+        "type": "Direct",
+        "requested": "[1.1.8, )",
+        "resolved": "1.1.8",
+        "contentHash": "b6p8ct7RuSspsNB8kOSCNDv7l7PsDrdaxrbtLcC5PfWK5hquRenFugV/yHhfhd2rH4B28+TaBqVxi8qCfvtQZg==",
+        "dependencies": {
+          "Mono.Cecil": "0.11.3",
+          "Newtonsoft.Json": "12.0.2"
+        }
+      },
       "DalamudPackager": {
         "type": "Direct",
         "requested": "[14.0.2, )",
@@ -13,6 +23,17 @@
         "requested": "[1.2.39, )",
         "resolved": "1.2.39",
         "contentHash": "fcFN01tDTIQqDuTwr1jUQK/geofiwjG5DycJQOnC72i1SsLAk1ELe+apBOuZ11UMQG8YKFZG1FgvjZPbqHyatg=="
+      },
+      "Newtonsoft.Json": {
+        "type": "Direct",
+        "requested": "[13.0.4, )",
+        "resolved": "13.0.4",
+        "contentHash": "pdgNNMai3zv51W5aq268sujXUyx7SNdE2bj1wZcWjAQrKMFZV260lbqYop1d2GM67JI1huLRwxo9ZqnfF/lC6A=="
+      },
+      "Mono.Cecil": {
+        "type": "Transitive",
+        "resolved": "0.11.3",
+        "contentHash": "DNYE+io5XfEE8+E+5padThTPHJARJHbz1mhbhMPNrrWGKVKKqj/KEeLvbawAmbIcT73NuxLV7itHZaYCZcVWGg=="
       }
     }
   }
