@@ -108,7 +108,7 @@ public sealed class Plugin : IDalamudPlugin
                 PottyCheck(true);
                 return;
             case "help":
-                ChatGui.Print("Available commands:", "PottyTrainer", 25);
+                ChatGui.PrintWithTag("Available commands:");
                 ChatGui.Print("/potty - Brings up the potty UI.");
                 ChatGui.Print("/potty check - Check if you need to use the potty.");
                 ChatGui.Print("/potty check ooc - Check if you need to use the potty (the actual truth).");
@@ -139,7 +139,7 @@ public sealed class Plugin : IDalamudPlugin
         }
         if (character.CurrentBladderUrgeState == PottyTrainer.Configuration.UrgeState.None)
         {
-            ChatGui.Print("You don't feel the urge to pee right now.", "PottyTrainer", 25);
+            ChatGui.PrintWithTag("You don't feel the urge to pee right now.");
             return;
         }
         Simulator.Pee(PlayerState, Configuration.GetCurrentCharacter()!, true);
@@ -154,7 +154,7 @@ public sealed class Plugin : IDalamudPlugin
         }
         if (character.CurrentBowelUrgeState == PottyTrainer.Configuration.UrgeState.None)
         {
-            ChatGui.Print("You don't feel the urge to poop right now.", "PottyTrainer", 25);
+            ChatGui.PrintWithTag("You don't feel the urge to poop right now.");
             return;
         }
         Simulator.Poop(PlayerState, Configuration.GetCurrentCharacter()!, true);
@@ -179,7 +179,7 @@ public sealed class Plugin : IDalamudPlugin
                 .Add(Simulator.GetPlayerPayload(PlayerState))
                 .AddText(" checks if they need to go potty...")
                 .BuiltString;
-        ChatGui.Print(message, "PottyTrainer", 25);
+        ChatGui.PrintWithTag(message);
         if (outOfCharacter)
         {
             var actualPeeUrge = Simulator.ComputeUrgeState(character.CurrentBladder, 70);
@@ -188,7 +188,7 @@ public sealed class Plugin : IDalamudPlugin
             if (character.CurrentBladderAwarenessThreshold >= 100)
             {
                 ChatGui.Print(new SeStringBuilder()
-                    .AddUiForeground(32)
+                    .AddUiForeground((ushort)UiColors.Orange)
                     .AddText("(They will eventually pee themselves without warning!)")
                     .AddUiForegroundOff()
                     .BuiltString);
@@ -200,7 +200,7 @@ public sealed class Plugin : IDalamudPlugin
             if (character.CurrentBowelAwarenessThreshold >= 100)
             {
                 ChatGui.Print(new SeStringBuilder()
-                    .AddUiForeground(32)
+                    .AddUiForeground((ushort)UiColors.Orange)
                     .AddText("(They will eventually poop themselves without warning!)")
                     .AddUiForegroundOff()
                     .BuiltString);
