@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Dalamud.Game.Player;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Plugin.Services;
@@ -43,6 +44,7 @@ public partial class ChatMessageBuilder : IChatMessageBuilder
     }
 
     internal static string TargetTag => "target";
+    internal static string TargetPronounTagPrefix => "tpronoun:";
     internal static string FgColorTagPrefix => "fgcolor:";
     internal static string FgColorEndTag => "/fgcolor";
 
@@ -56,9 +58,21 @@ public partial class ChatMessageBuilder : IChatMessageBuilder
             return new PlayerPayload(playerState.CharacterName, playerState.HomeWorld.Value.RowId);
         }
 
+        if (tag.StartsWith(TargetPronounTagPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            Sex? sex = null;
+            if (playerState != null && playerState.IsLoaded)
+            {
+                sex = playerState.Sex;
+            }
+            var sexValue = sex == null ? "Other" : sex.Value.ToString();
+            var pronounCase = tag[TargetPronounTagPrefix.Length..].GetPronounCase() ?? PronounCase.Subjective;
+            return new TextPayload(LocWrapper.Localize($"Pronoun.{sexValue}.{pronounCase.GetEnumValue()}"));
+        }
+
         if (tag.StartsWith(FgColorTagPrefix, StringComparison.OrdinalIgnoreCase))
         {
-            return new UIForegroundPayload(tag.Substring(FgColorTagPrefix.Length).GetUiColor());
+            return new UIForegroundPayload(tag[FgColorTagPrefix.Length..].GetUiColor());
         }
 
         if (tag.Equals(FgColorEndTag, StringComparison.OrdinalIgnoreCase))

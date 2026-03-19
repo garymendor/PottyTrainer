@@ -1,4 +1,76 @@
 {
+    "Pronoun.Female.s": {
+        "message": "she"
+    },
+    "Pronoun.Male.s": {
+        "message": "he"
+    },
+    "Pronoun.Other.s": {
+        "message": "they"
+    },
+    "Pronoun.Female.sc": {
+        "message": "She"
+    },
+    "Pronoun.Male.sc": {
+        "message": "He"
+    },
+    "Pronoun.Other.sc": {
+        "message": "They"
+    },
+    "Pronoun.Female.o": {
+        "message": "her"
+    },
+    "Pronoun.Male.o": {
+        "message": "him"
+    },
+    "Pronoun.Other.o": {
+        "message": "them"
+    },
+    "Pronoun.Female.oc": {
+        "message": "Her"
+    },
+    "Pronoun.Male.oc": {
+        "message": "Him"
+    },
+    "Pronoun.Other.oc": {
+        "message": "Them"
+    },
+    "Pronoun.Female.p": {
+        "message": "her"
+    },
+    "Pronoun.Male.p": {
+        "message": "his"
+    },
+    "Pronoun.Other.p": {
+        "message": "their"
+    },
+    "Pronoun.Female.pc": {
+        "message": "Her"
+    },
+    "Pronoun.Male.pc": {
+        "message": "His"
+    },
+    "Pronoun.Other.pc": {
+        "message": "Their"
+    },
+    "Pronoun.Female.r": {
+        "message": "herself"
+    },
+    "Pronoun.Male.r": {
+        "message": "himself"
+    },
+    "Pronoun.Other.r": {
+        "message": "themselves"
+    },
+    "Pronoun.Female.rc": {
+        "message": "Herself"
+    },
+    "Pronoun.Male.rc": {
+        "message": "Himself"
+    },
+    "Pronoun.Other.rc": {
+        "message": "Themselves"
+    },
     "ChatMessages.Urge.IC.None.Pee": {
         "message": "{target} doesn't feel the urge to pee right now."
     },
@@ -12,16 +84,16 @@
         "message": "{target} is {fgcolor:yellow}starting to feel the urge{/fgcolor} to poop."
     },
     "ChatMessages.Urge.IC.Danger.Pee": {
-        "message": "{target} is {fgcolor:orange}feeling very uncomfortable{/fgcolor} - the pressure in their bladder is building up!"
+        "message": "{target} is {fgcolor:orange}feeling very uncomfortable{/fgcolor} - the pressure in {tpronoun:p} bladder is building up!"
     },
     "ChatMessages.Urge.IC.Danger.Poop": {
-        "message": "{target} is {fgcolor:orange}feeling very uncomfortable{/fgcolor} - the pressure in their bowels is building up!"
+        "message": "{target} is {fgcolor:orange}feeling very uncomfortable{/fgcolor} - the pressure in {tpronoun:p} bowels is building up!"
     },
     "ChatMessages.Urge.IC.Bursting.Pee": {
-        "message": "{target} {fgcolor:red}can't hold it much longer!{/fgcolor}  If they don't find a toilet soon, they will wet themselves!"
+        "message": "{target} {fgcolor:red}can't hold it much longer!{/fgcolor} If {tpronoun:s} doesn't find a toilet soon, {tpronoun:s} will wet {tpronoun:r}!"
     },
     "ChatMessages.Urge.IC.Bursting.Poop": {
-        "message": "{target} {fgcolor:red}can't hold it much longer!{/fgcolor}  If they don't find a toilet soon, they will soil themselves!"
+        "message": "{target} {fgcolor:red}can't hold it much longer!{/fgcolor} If {tpronoun:s} doesn't find a toilet soon, {tpronoun:s} will soil {tpronoun:r}!"
     },
     "ChatMessages.Urge.OOC.None.Pee": {
         "message": "{target} truly doesn't need to pee right now."
@@ -30,21 +102,21 @@
         "message": "{target} truly doesn't need to poop right now."
     },
     "ChatMessages.Urge.OOC.Warning.Pee": {
-        "message": "{target} thinks they don't need to pee, but actually {fgcolor:yellow}are starting to need to go{/fgcolor}."
+        "message": "{target} thinks {tpronoun:s} doesn't need to pee, but in fact {tpronoun:s} {fgcolor:yellow}is starting to need to go{/fgcolor}."
     },
     "ChatMessages.Urge.OOC.Warning.Poop": {
-        "message": "{target} thinks they don't need to poop, but actually {fgcolor:yellow}are starting to need to go{/fgcolor}."
+        "message": "{target} thinks {tpronoun:s} doesn't need to poop, but in fact {tpronoun:s} {fgcolor:yellow}is starting to need to go{/fgcolor}."
     },
     "ChatMessages.Urge.OOC.Danger.Pee": {
-        "message": "{target} thinks they don't need to pee, but actually {fgcolor:orange}urgently needs to go{/fgcolor}."
+        "message": "{target} thinks {tpronoun:s} doesn't need to pee, but in fact {tpronoun:s} {fgcolor:orange}urgently needs to go{/fgcolor}!"
     },
     "ChatMessages.Urge.OOC.Danger.Poop": {
-        "message": "{target} thinks they don't need to poop, but actually {fgcolor:orange}urgently needs to go{/fgcolor}."
+        "message": "{target} thinks {tpronoun:s} doesn't need to poop, but in fact {tpronoun:s} {fgcolor:orange}urgently needs to go{/fgcolor}!"
     },
     "ChatMessages.Urge.OOC.Bursting.Pee": {
-        "message": "{target} thinks they don't need to pee, but actually {fgcolor:red}are on the verge of wetting themselves{/fgcolor}."
+        "message": "{target} thinks {tpronoun:s} doesn't need to pee, but in fact {tpronoun:s} {fgcolor:red}is on the verge of wetting {tpronoun:r}{/fgcolor}!"
     },
     "ChatMessages.Urge.OOC.Bursting.Poop": {
-        "message": "{target} thinks they don't need to poop, but actually {fgcolor:red}are on the verge of soiling themselves{/fgcolor}."
+        "message": "{target} thinks {tpronoun:s} doesn't need to poop, but in fact {tpronoun:s} {fgcolor:red}is on the verge of soiling {tpronoun:r}{/fgcolor}!"
     }
 }
