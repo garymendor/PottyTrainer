@@ -118,5 +118,44 @@
     },
     "ChatMessages.Urge.OOC.Bursting.Poop": {
         "message": "{target} thinks {tpronoun:s} doesn't need to poop, but in fact {tpronoun:s} {fgcolor:red}is on the verge of soiling {tpronoun:r}{/fgcolor}!"
+    },
+    "ChatMessages.Action.Check.Inactive": {
+        "message": "{target}'s bodily functions are inactive right now."
+    },
+    "ChatMessages.Action.Check.InCharacter": {
+        "message": "{target} checks if {tpronoun:s} needs to go potty..."
+    },
+    "ChatMessages.Action.Check.OutOfCharacter": {
+        "message": "You check to see if {target} needs to go potty..."
+    },
+    "ChatMessages.Action.Check.NoPeeWarning": {
+        "message": "    ({tpronoun:sc} doesn't know it yet, but {tpronoun:s} will eventually {fgcolor:yellow}{glow:brown}wet {tpronoun:r}{/glow}{/fgcolor} without warning!)"
+    },
+    "ChatMessages.Action.Check.NoPoopWarning": {
+        "message": "    ({tpronoun:sc} doesn't know it yet, but {tpronoun:s} will eventually {fgcolor:brown}{glow:yellow}soil {tpronoun:r}{/glow}{/fgcolor} without warning!)"
+    },
+    "ChatMessages.Action.Pee.Failed": {
+        "message": "You can't pee right now - you don't feel the urge to go yet."
+    },
+    "ChatMessages.Action.Pee.Voluntary": {
+        "message": "{target} is now {fgcolor:yellow}{glow:brown}peeing{/glow}{/fgcolor}!"
+    },
+    "ChatMessages.Action.Pee.Involuntary": {
+        "message": "{target} can't hold it any longer! {tpronoun:sc} is now {fgcolor:yellow}{glow:brown}peeing{/glow}{/fgcolor}, whether {tpronoun:s} likes it or not!"
+    },
+    "ChatMessages.Action.Poop.Failed": {
+        "message": "You can't poop right now - you don't feel the urge to go yet."
+    },
+    "ChatMessages.Action.Poop.Voluntary": {
+        "message": "{target} is now {fgcolor:brown}{glow:yellow}pooping{/glow}{/fgcolor}!"
+    },
+    "ChatMessages.Action.Poop.Involuntary": {
+        "message": "{target} can't hold it any longer! {tpronoun:sc} is now {fgcolor:brown}{glow:yellow}pooping{/glow}{/fgcolor}, whether {tpronoun:s} likes it or not!"
+    },
+    "ChatMessages.Action.Accident.Pee": {
+        "message": "{fgcolor:orange}({tpronoun:sc} didn't even know {tpronoun:s} needed to pee, and didn't have time to take off {tpronoun:p} underwear first! If {tpronoun:s} was wearing any, {tpronoun:s} just wet {tpronoun:r}!){/fgcolor}"
+    },
+    "ChatMessages.Action.Accident.Poop": {
+        "message": "{fgcolor:orange}({tpronoun:sc} didn't even know {tpronoun:s} needed to poop, and didn't have time to take off {tpronoun:p} underwear first! If {tpronoun:s} was wearing any, {tpronoun:s} just soiled {tpronoun:r}!){/fgcolor}"
     }
 }

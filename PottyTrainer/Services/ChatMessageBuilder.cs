@@ -11,6 +11,7 @@ namespace PottyTrainer.Services;
 public interface IChatMessageBuilder
 {
     SeString GenerateMessage(string message);
+    SeString GenerateMessageByKey(string key);
 }
 
 public partial class ChatMessageBuilder : IChatMessageBuilder
@@ -43,10 +44,15 @@ public partial class ChatMessageBuilder : IChatMessageBuilder
         return stringBuilder.BuiltString;
     }
 
+    public virtual SeString GenerateMessageByKey(string key)
+        => GenerateMessage(LocWrapper.Localize(key));
+
     internal static string TargetTag => "target";
     internal static string TargetPronounTagPrefix => "tpronoun:";
     internal static string FgColorTagPrefix => "fgcolor:";
     internal static string FgColorEndTag => "/fgcolor";
+    internal static string GlowTagPrefix => "glow:";
+    internal static string GlowEndTag => "/glow";
 
     internal Payload GetPayloadForTag(string tag)
     {
@@ -78,6 +84,16 @@ public partial class ChatMessageBuilder : IChatMessageBuilder
         if (tag.Equals(FgColorEndTag, StringComparison.OrdinalIgnoreCase))
         {
             return UIForegroundPayload.UIForegroundOff;
+        }
+
+        if (tag.StartsWith(GlowTagPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return new UIGlowPayload(tag[GlowTagPrefix.Length..].GetUiColor());
+        }
+
+        if (tag.Equals(GlowEndTag, StringComparison.OrdinalIgnoreCase))
+        {
+            return UIGlowPayload.UIGlowOff;
         }
 
         // Tag not matched, return the literal value

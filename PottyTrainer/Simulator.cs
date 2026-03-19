@@ -1,6 +1,5 @@
 using System;
 using System.Threading;
-using Dalamud;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface.Colors;
@@ -163,22 +162,11 @@ public class Simulator : ISimulator
 
     public void Pee(IPlayerState playerState, Character character, bool isVoluntary = false)
     {
-        var message = new SeStringBuilder()
-            .Add(GetPlayerPayload(playerState))
-            .AddText(isVoluntary ? "" : " can't hold it anymore and ")
-            .AddText($" is now ")
-            .AddUiForeground((ushort)UiColors.Yellow)
-            .AddUiGlow((ushort)UiColors.Brown)
-            .AddText("peeing!")
-            .AddUiGlowOff()
-            .AddUiForegroundOff();
+        Plugin.ChatGui.PrintWithTag(chatMessageBuilder.GenerateMessageByKey($"ChatMessages.Action.Pee.{(isVoluntary ? "Voluntary" : "Involuntary")}"));
         if (character.CurrentBladderUrgeState == UrgeState.None)
         {
-            message.AddUiForeground((ushort)UiColors.Orange)
-                .AddText(" (They didn't even know they needed to!)")
-                .AddUiForegroundOff();
+            Plugin.ChatGui.Print(chatMessageBuilder.GenerateMessageByKey("ChatMessages.Action.Accident.Pee"));
         }
-        Plugin.ChatGui.PrintWithTag(message.BuiltString);
         character.CurrentBladder = 0;
         character.CurrentBladderAwarenessThreshold = random.Next(character.BladderAwarenessThresholdMin, character.BladderAwarenessThresholdMax + 1);
         character.CurrentBladderUrgeState = UrgeState.None;
@@ -186,22 +174,11 @@ public class Simulator : ISimulator
 
     public void Poop(IPlayerState playerState, Character character, bool isVoluntary = false)
     {
-        var message = new SeStringBuilder()
-            .Add(GetPlayerPayload(playerState))
-            .AddText(isVoluntary ? "" : " can't hold it anymore and ")
-            .AddText($" is now ")
-            .AddUiForeground((ushort)UiColors.Brown)
-            .AddUiGlow((ushort)UiColors.Yellow)
-            .AddText("pooping!")
-            .AddUiGlowOff()
-            .AddUiForegroundOff();
+        Plugin.ChatGui.PrintWithTag(chatMessageBuilder.GenerateMessageByKey($"ChatMessages.Action.Poop.{(isVoluntary ? "Voluntary" : "Involuntary")}"));
         if (character.CurrentBowelUrgeState == UrgeState.None)
         {
-            message.AddUiForeground((ushort)UiColors.Orange)
-                .AddText(" (They didn't even know they needed to!)")
-                .AddUiForegroundOff();
+            Plugin.ChatGui.Print(chatMessageBuilder.GenerateMessageByKey("ChatMessages.Action.Accident.Poop"));
         }
-        Plugin.ChatGui.PrintWithTag(message.BuiltString);
         character.CurrentBowel = 0;
         character.CurrentBowelAwarenessThreshold = random.Next(character.BowelAwarenessThresholdMin, character.BowelAwarenessThresholdMax + 1);
         character.CurrentBowelUrgeState = UrgeState.None;
@@ -228,7 +205,7 @@ public class Simulator : ISimulator
     }
 
     public SeString GetChatUrgeMessage(UrgeState urgeState, bool isPeeing, UrgeState? actualUrgeState = null)
-        => chatMessageBuilder.GenerateMessage(LocWrapper.Localize(GetChatUrgeMessageKey(urgeState, isPeeing, actualUrgeState)));
+        => chatMessageBuilder.GenerateMessageByKey(GetChatUrgeMessageKey(urgeState, isPeeing, actualUrgeState));
 
     public string GetChatUrgeMessageKey(UrgeState urgeState, bool isPeeing, UrgeState? actualUrgeState = null)
         => urgeState switch
