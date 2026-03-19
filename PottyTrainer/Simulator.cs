@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Dalamud;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface.Colors;
@@ -7,6 +8,7 @@ using Dalamud.IoC;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Common.Math;
 using PottyTrainer.Configuration;
+using PottyTrainer.Services;
 
 namespace PottyTrainer;
 
@@ -22,7 +24,7 @@ public interface ISimulator : IDisposable
 public class Simulator : ISimulator
 {
     private readonly Plugin plugin;
-
+    private readonly IChatMessageBuilder chatMessageBuilder;
     private readonly Random random = new();
 
     private CancellationTokenSource? cancellationTokenSource;
@@ -32,6 +34,7 @@ public class Simulator : ISimulator
     public Simulator(Plugin plugin)
     {
         this.plugin = plugin;
+        chatMessageBuilder = new ChatMessageBuilder(Plugin.PlayerState);
     }
 
     private bool IsActive()
@@ -76,7 +79,7 @@ public class Simulator : ISimulator
             cancellationTokenSource = null;
         }
     }
-    
+
     public void Tick()
     {
         if (cancellationTokenSource?.IsCancellationRequested == true || !IsActive())
@@ -99,12 +102,12 @@ public class Simulator : ISimulator
             character.CurrentBladderAwarenessThreshold = random.Next(character.BladderAwarenessThresholdMin, character.BladderAwarenessThresholdMax + 1);
         }
 
-        var bladderIncreaseMaximum = (float) 10000.0 / character.BladderMinimumMinutes;
-        var bladderIncreaseMinimum = (float) 10000.0 / character.BladderMaximumMinutes;
-        var bladderIncrease = random.Next((int) bladderIncreaseMinimum, (int) bladderIncreaseMaximum + 1);
+        var bladderIncreaseMaximum = (float)10000.0 / character.BladderMinimumMinutes;
+        var bladderIncreaseMinimum = (float)10000.0 / character.BladderMaximumMinutes;
+        var bladderIncrease = random.Next((int)bladderIncreaseMinimum, (int)bladderIncreaseMaximum + 1);
         if (bladderIncrease >= 1)
         {
-            character.CurrentBladder += (float) bladderIncrease / 100;
+            character.CurrentBladder += (float)bladderIncrease / 100;
             if (character.CurrentBladder > 100)
             {
                 Pee(playerState, character);
@@ -112,9 +115,10 @@ public class Simulator : ISimulator
             else
             {
                 var newUrgeState = ComputeUrgeState(character.CurrentBladder, character.CurrentBladderAwarenessThreshold);
-                if (newUrgeState != character.CurrentBladderUrgeState) {
+                if (newUrgeState != character.CurrentBladderUrgeState)
+                {
                     character.CurrentBladderUrgeState = newUrgeState;
-                    Plugin.ChatGui.Print(GetChatUrgeMessage(playerState, newUrgeState, true), "PottyTrainer", 25);
+                    Plugin.ChatGui.Print(GetChatUrgeMessage(newUrgeState, true), "PottyTrainer", 25);
                 }
             }
         }
@@ -125,12 +129,12 @@ public class Simulator : ISimulator
             character.CurrentBowelAwarenessThreshold = random.Next(character.BowelAwarenessThresholdMin, character.BowelAwarenessThresholdMax + 1);
         }
 
-        var bowelIncreaseMaximum = (float) 10000.0 / character.BowelMinimumMinutes;
-        var bowelIncreaseMinimum = (float) 10000.0 / character.BowelMaximumMinutes;
-        var bowelIncrease = random.Next((int) bowelIncreaseMinimum, (int) bowelIncreaseMaximum + 1);
+        var bowelIncreaseMaximum = (float)10000.0 / character.BowelMinimumMinutes;
+        var bowelIncreaseMinimum = (float)10000.0 / character.BowelMaximumMinutes;
+        var bowelIncrease = random.Next((int)bowelIncreaseMinimum, (int)bowelIncreaseMaximum + 1);
         if (bowelIncrease >= 1)
         {
-            character.CurrentBowel += (float) bowelIncrease / 100;
+            character.CurrentBowel += (float)bowelIncrease / 100;
             if (character.CurrentBowel > 100)
             {
                 Poop(playerState, character);
@@ -138,9 +142,10 @@ public class Simulator : ISimulator
             else
             {
                 var newUrgeState = ComputeUrgeState(character.CurrentBowel, character.CurrentBowelAwarenessThreshold);
-                if (newUrgeState != character.CurrentBowelUrgeState) {
+                if (newUrgeState != character.CurrentBowelUrgeState)
+                {
                     character.CurrentBowelUrgeState = newUrgeState;
-                    Plugin.ChatGui.Print(GetChatUrgeMessage(playerState, newUrgeState, false), "PottyTrainer", 25);
+                    Plugin.ChatGui.Print(GetChatUrgeMessage(newUrgeState, false), "PottyTrainer", 25);
                 }
             }
         }
@@ -213,7 +218,7 @@ public class Simulator : ISimulator
         {
             return UrgeState.Bursting;
         }
-        
+
         if (current >= 80)
         {
             return UrgeState.Danger;
@@ -222,100 +227,34 @@ public class Simulator : ISimulator
         return UrgeState.Warning;
     }
 
-    public static SeString GetChatUrgeMessage(IPlayerState playerState, UrgeState urgeState, bool isPeeing, UrgeState? actualUrgeState = null)
-    {
-        var playerPayload = GetPlayerPayload(playerState);
-        switch (urgeState)
+    public SeString GetChatUrgeMessage(UrgeState urgeState, bool isPeeing, UrgeState? actualUrgeState = null)
+        => chatMessageBuilder.GenerateMessage(LocWrapper.Localize(GetChatUrgeMessageKey(urgeState, isPeeing, actualUrgeState)));
+
+    public string GetChatUrgeMessageKey(UrgeState urgeState, bool isPeeing, UrgeState? actualUrgeState = null)
+        => urgeState switch
         {
-            case UrgeState.Warning:
-                return new SeStringBuilder()
-                    .AddUiForeground(25)
-                    .Add(playerPayload)
-                    .AddText($" is starting to feel the urge to {(isPeeing ? "pee" : "poop")}.")
-                    .AddUiForegroundOff()
-                    .BuiltString;
-            case UrgeState.Danger:
-                return new SeStringBuilder()
-                    .AddUiForeground(32)
-                    .Add(playerPayload)
-                    .AddText($" is feeling very uncomfortable - the pressure in their {(isPeeing ? "bladder" : "bowels")} is building up!")
-                    .AddUiForegroundOff()
-                    .BuiltString;
-            case UrgeState.Bursting:
-                return new SeStringBuilder()
-                    .AddUiForeground(17)
-                    .Add(playerPayload)
-                    .AddText($" can't hold it much longer! If they don't find a toilet soon, they will {(isPeeing ? "pee" : "poop")} themselves!")
-                    .AddUiForegroundOff()
-                    .BuiltString;
-            case UrgeState.None:
-            default:
-                if (actualUrgeState != null)
+            UrgeState.Warning => "ChatMessages.Urge.IC.Warning.",
+            UrgeState.Danger => "ChatMessages.Urge.IC.Danger.",
+            UrgeState.Bursting => "ChatMessages.Urge.IC.Bursting.",
+            UrgeState.None or _ =>
+                (actualUrgeState == null) ? "ChatMessages.Urge.IC.None."
+                : actualUrgeState.Value switch
                 {
-                    if (actualUrgeState.Value != urgeState)
-                    {
-                        return new SeStringBuilder()
-                            .Add(playerPayload)
-                            .AddText($" thinks they don't need to {(isPeeing ? "pee" : "poop")} right now - but actually they ")
-                            .Append(GetTrueUrgeMessage(actualUrgeState.Value, isPeeing))
-                            .AddText(".")
-                            .BuiltString;
-                    } 
-                    return new SeStringBuilder()
-                        .Add(playerPayload)
-                        .AddText($" truly doesn't need to {(isPeeing ? "pee" : "poop")}.")
-                        .BuiltString;
+                    UrgeState.Warning => "ChatMessages.Urge.OOC.Warning.",
+                    UrgeState.Danger => "ChatMessages.Urge.OOC.Danger.",
+                    UrgeState.Bursting => "ChatMessages.Urge.OOC.Bursting.",
+                    UrgeState.None or _ => "ChatMessages.Urge.OOC.None.",
                 }
-                else 
-                {
-                    return new SeStringBuilder()
-                        .Add(playerPayload)
-                        .AddText($" doesn't need to {(isPeeing ? "pee" : "poop")}.")
-                        .BuiltString;
-                }
-        }
-    }
+        } + (isPeeing ? "Pee" : "Poop");
 
     public static PlayerPayload GetPlayerPayload(IPlayerState playerState)
     {
         return new PlayerPayload(playerState.CharacterName, playerState.HomeWorld.Value.RowId);
     }
 
-    public static SeString GetTrueUrgeMessage(UrgeState urgeState, bool isPeeing)
-    {
-        var message = new SeStringBuilder();
-        switch(urgeState)
-        {
-            case UrgeState.Warning:
-                message
-                    .AddUiForeground(25)
-                    .AddText($"need to {(isPeeing ? "pee" : "poop")} a little bit.")
-                    .AddUiForegroundOff();
-                break;
-            case UrgeState.Danger:
-                message
-                    .AddUiForeground(32)
-                    .AddText($"urgently need to {(isPeeing ? "pee" : "poop")}.")
-                    .AddUiForegroundOff();
-                break;
-            case UrgeState.Bursting:
-                message
-                    .AddUiForeground(17)
-                    .AddText($"are about to {(isPeeing ? "pee" : "poop")} themselves any moment!")
-                    .AddUiForegroundOff();
-                break;
-            case UrgeState.None:
-            default:
-                message.AddText($"really don't need to {(isPeeing ? "pee" : "poop")} right now.");
-                break;
-        }
-        return message.BuiltString;
-    }
-
-
     public static string GetUrgeMessage(UrgeState urgeState, bool isPeeing)
     {
-        switch(urgeState)
+        switch (urgeState)
         {
             case UrgeState.Warning:
                 return $"Starting to feel the urge to {(isPeeing ? "pee" : "poop")}";

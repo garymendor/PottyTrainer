@@ -6,6 +6,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using PottyTrainer.Windows;
+using PottyTrainer.Services;
 
 namespace PottyTrainer;
 
@@ -34,6 +35,10 @@ public sealed class Plugin : IDalamudPlugin
     public Plugin()
     {
         Configuration = PluginInterface.GetPluginConfig() as Configuration.Base ?? new Configuration.Base();
+        var locDirectory = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "loc");
+        var localization = new LocWrapper(locDirectory, "PottyTrainer.");
+        localization.SetupWithUiCulture();
+
         Simulator = new Simulator(this);
 
         // You might normally want to embed resources and load them from the manifest stream
@@ -164,15 +169,21 @@ public sealed class Plugin : IDalamudPlugin
             return;
         }
 
-        var message = new SeStringBuilder()
-            .Add(Simulator.GetPlayerPayload(PlayerState))
-            .AddText(" checks if they need to go potty...")
-            .BuiltString;
+        var message = outOfCharacter ?
+            new SeStringBuilder()
+                .AddText("You check if ")
+                .Add(Simulator.GetPlayerPayload(PlayerState))
+                .AddText(" needs to go potty...")
+            .BuiltString
+            : new SeStringBuilder()
+                .Add(Simulator.GetPlayerPayload(PlayerState))
+                .AddText(" checks if they need to go potty...")
+                .BuiltString;
         ChatGui.Print(message, "PottyTrainer", 25);
         if (outOfCharacter)
         {
             var actualPeeUrge = Simulator.ComputeUrgeState(character.CurrentBladder, 70);
-            var peeMessage = Simulator.GetChatUrgeMessage(PlayerState, character.CurrentBladderUrgeState, true, actualPeeUrge);
+            var peeMessage = Simulator.GetChatUrgeMessage(character.CurrentBladderUrgeState, true, actualPeeUrge);
             ChatGui.Print(peeMessage);
             if (character.CurrentBladderAwarenessThreshold >= 100)
             {
@@ -184,7 +195,7 @@ public sealed class Plugin : IDalamudPlugin
             }
 
             var actualPoopUrge = Simulator.ComputeUrgeState(character.CurrentBowel, 70);
-            var poopMessage = Simulator.GetChatUrgeMessage(PlayerState, character.CurrentBowelUrgeState, false, actualPoopUrge);
+            var poopMessage = Simulator.GetChatUrgeMessage(character.CurrentBowelUrgeState, false, actualPoopUrge);
             ChatGui.Print(poopMessage);
             if (character.CurrentBowelAwarenessThreshold >= 100)
             {
@@ -197,8 +208,8 @@ public sealed class Plugin : IDalamudPlugin
         }
         else
         {
-            ChatGui.Print(Simulator.GetChatUrgeMessage(PlayerState, character.CurrentBladderUrgeState, true));
-            ChatGui.Print(Simulator.GetChatUrgeMessage(PlayerState, character.CurrentBowelUrgeState, false));
+            ChatGui.Print(Simulator.GetChatUrgeMessage(character.CurrentBladderUrgeState, true));
+            ChatGui.Print(Simulator.GetChatUrgeMessage(character.CurrentBowelUrgeState, false));
         }
     }
     

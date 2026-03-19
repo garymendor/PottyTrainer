@@ -1,0 +1,50 @@
+{
+    "ChatMessages.Urge.IC.None.Pee": {
+        "message": "{target} doesn't feel the urge to pee right now."
+    },
+    "ChatMessages.Urge.IC.None.Poop": {
+        "message": "{target} doesn't feel the urge to poop right now."
+    },
+    "ChatMessages.Urge.IC.Warning.Pee": {
+        "message": "{target} is {fgcolor:yellow}starting to feel the urge{/fgcolor} to pee."
+    },
+    "ChatMessages.Urge.IC.Warning.Poop": {
+        "message": "{target} is {fgcolor:yellow}starting to feel the urge{/fgcolor} to poop."
+    },
+    "ChatMessages.Urge.IC.Danger.Pee": {
+        "message": "{target} is {fgcolor:orange}feeling very uncomfortable{/fgcolor} - the pressure in their bladder is building up!"
+    },
+    "ChatMessages.Urge.IC.Danger.Poop": {
+        "message": "{target} is {fgcolor:orange}feeling very uncomfortable{/fgcolor} - the pressure in their bowels is building up!"
+    },
+    "ChatMessages.Urge.IC.Bursting.Pee": {
+        "message": "{target} {fgcolor:red}can't hold it much longer!{/fgcolor}  If they don't find a toilet soon, they will wet themselves!"
+    },
+    "ChatMessages.Urge.IC.Bursting.Poop": {
+        "message": "{target} {fgcolor:red}can't hold it much longer!{/fgcolor}  If they don't find a toilet soon, they will soil themselves!"
+    },
+    "ChatMessages.Urge.OOC.None.Pee": {
+        "message": "{target} truly doesn't need to pee right now."
+    },
+    "ChatMessages.Urge.OOC.None.Poop": {
+        "message": "{target} truly doesn't need to poop right now."
+    },
+    "ChatMessages.Urge.OOC.Warning.Pee": {
+        "message": "{target} thinks they don't need to pee, but actually {fgcolor:yellow}are starting to need to go{/fgcolor}."
+    },
+    "ChatMessages.Urge.OOC.Warning.Poop": {
+        "message": "{target} thinks they don't need to poop, but actually {fgcolor:yellow}are starting to need to go{/fgcolor}."
+    },
+    "ChatMessages.Urge.OOC.Danger.Pee": {
+        "message": "{target} thinks they don't need to pee, but actually {fgcolor:orange}urgently needs to go{/fgcolor}."
+    },
+    "ChatMessages.Urge.OOC.Danger.Poop": {
+        "message": "{target} thinks they don't need to poop, but actually {fgcolor:orange}urgently needs to go{/fgcolor}."
+    },
+    "ChatMessages.Urge.OOC.Bursting.Pee": {
+        "message": "{target} thinks they don't need to pee, but actually {fgcolor:red}are on the verge of wetting themselves{/fgcolor}."
+    },
+    "ChatMessages.Urge.OOC.Bursting.Poop": {
+        "message": "{target} thinks they don't need to poop, but actually {fgcolor:red}are on the verge of soiling themselves{/fgcolor}."
+    }
+}
