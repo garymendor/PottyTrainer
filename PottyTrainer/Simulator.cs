@@ -118,7 +118,7 @@ public class Simulator : ISimulator
                 if (newUrgeState != character.CurrentBladderUrgeState)
                 {
                     character.CurrentBladderUrgeState = newUrgeState;
-                    Plugin.ChatGui.Print(GetChatUrgeMessage(newUrgeState, true), "PottyTrainer", 25);
+                    Plugin.ChatGui.PrintWithTag(GetChatUrgeMessage(newUrgeState, true));
                 }
             }
         }
@@ -145,7 +145,7 @@ public class Simulator : ISimulator
                 if (newUrgeState != character.CurrentBowelUrgeState)
                 {
                     character.CurrentBowelUrgeState = newUrgeState;
-                    Plugin.ChatGui.Print(GetChatUrgeMessage(newUrgeState, false), "PottyTrainer", 25);
+                    Plugin.ChatGui.PrintWithTag(GetChatUrgeMessage(newUrgeState, false));
                 }
             }
         }
@@ -167,18 +167,18 @@ public class Simulator : ISimulator
             .Add(GetPlayerPayload(playerState))
             .AddText(isVoluntary ? "" : " can't hold it anymore and ")
             .AddText($" is now ")
-            .AddUiForeground(25)
-            .AddUiGlow(30)
+            .AddUiForeground((ushort)UiColors.Yellow)
+            .AddUiGlow((ushort)UiColors.Brown)
             .AddText("peeing!")
             .AddUiGlowOff()
             .AddUiForegroundOff();
         if (character.CurrentBladderUrgeState == UrgeState.None)
         {
-            message.AddUiForeground(32)
+            message.AddUiForeground((ushort)UiColors.Orange)
                 .AddText(" (They didn't even know they needed to!)")
                 .AddUiForegroundOff();
         }
-        Plugin.ChatGui.Print(message.BuiltString, "PottyTrainer", 25);
+        Plugin.ChatGui.PrintWithTag(message.BuiltString);
         character.CurrentBladder = 0;
         character.CurrentBladderAwarenessThreshold = random.Next(character.BladderAwarenessThresholdMin, character.BladderAwarenessThresholdMax + 1);
         character.CurrentBladderUrgeState = UrgeState.None;
@@ -190,18 +190,18 @@ public class Simulator : ISimulator
             .Add(GetPlayerPayload(playerState))
             .AddText(isVoluntary ? "" : " can't hold it anymore and ")
             .AddText($" is now ")
-            .AddUiForeground(30)
-            .AddUiGlow(25)
+            .AddUiForeground((ushort)UiColors.Brown)
+            .AddUiGlow((ushort)UiColors.Yellow)
             .AddText("pooping!")
             .AddUiGlowOff()
             .AddUiForegroundOff();
         if (character.CurrentBowelUrgeState == UrgeState.None)
         {
-            message.AddUiForeground(32)
+            message.AddUiForeground((ushort)UiColors.Orange)
                 .AddText(" (They didn't even know they needed to!)")
                 .AddUiForegroundOff();
         }
-        Plugin.ChatGui.Print(message.BuiltString, "PottyTrainer", 25);
+        Plugin.ChatGui.PrintWithTag(message.BuiltString);
         character.CurrentBowel = 0;
         character.CurrentBowelAwarenessThreshold = random.Next(character.BowelAwarenessThresholdMin, character.BowelAwarenessThresholdMax + 1);
         character.CurrentBowelUrgeState = UrgeState.None;

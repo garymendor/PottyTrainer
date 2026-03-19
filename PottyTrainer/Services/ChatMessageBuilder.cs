@@ -5,7 +5,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Plugin.Services;
 
-namespace PottyTrainer;
+namespace PottyTrainer.Services;
 
 public interface IChatMessageBuilder
 {
@@ -58,7 +58,7 @@ public partial class ChatMessageBuilder : IChatMessageBuilder
 
         if (tag.StartsWith(FgColorTagPrefix, StringComparison.OrdinalIgnoreCase))
         {
-            return new UIForegroundPayload(GetUiColor(tag.Substring(FgColorTagPrefix.Length)));
+            return new UIForegroundPayload(tag.Substring(FgColorTagPrefix.Length).GetUiColor());
         }
 
         if (tag.Equals(FgColorEndTag, StringComparison.OrdinalIgnoreCase))
@@ -68,17 +68,6 @@ public partial class ChatMessageBuilder : IChatMessageBuilder
 
         // Tag not matched, return the literal value
         return new TextPayload($"{{{tag}}}");
-    }
-
-    internal ushort GetUiColor(string colorName)
-    {
-        return colorName.ToLower() switch
-        {
-            "yellow" => 25,
-            "orange" => 32,
-            "red" => 17,
-            _ => 0 // Default color
-        };
     }
 
     [GeneratedRegex(@"(?<text>[^{]*)(\{(?<tag>([^\}]*)?)\})?", RegexOptions.Compiled)]
