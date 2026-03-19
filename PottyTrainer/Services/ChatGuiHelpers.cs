@@ -1,10 +1,8 @@
 using System;
-using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 
 namespace PottyTrainer.Services;
 

@@ -31,6 +31,7 @@ public sealed class Plugin : IDalamudPlugin
     private MainWindow MainWindow { get; init; }
     private DebugWindow DebugWindow { get; init; }
     public Simulator Simulator { get; init; }
+    private readonly IChatMessageBuilder chatMessageBuilder;
 
     public Plugin()
     {
@@ -38,6 +39,7 @@ public sealed class Plugin : IDalamudPlugin
         var locDirectory = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "loc");
         var localization = new LocWrapper(locDirectory, "PottyTrainer.");
         localization.SetupWithUiCulture();
+        chatMessageBuilder = new ChatMessageBuilder(PlayerState);
 
         Simulator = new Simulator(this);
 
@@ -139,14 +141,13 @@ public sealed class Plugin : IDalamudPlugin
         }
         if (character.CurrentBladderUrgeState == PottyTrainer.Configuration.UrgeState.None)
         {
-            ChatGui.PrintWithTag("You don't feel the urge to pee right now.");
+            ChatGui.PrintWithTag(chatMessageBuilder.GenerateMessageByKey("ChatMessages.Action.Pee.Failed"));
             return;
         }
         Simulator.Pee(PlayerState, Configuration.GetCurrentCharacter()!, true);
     }
 
-    private void Poop()
-    {
+    private void Poop()    {
         var character = Configuration.GetCurrentCharacter();
         if (character == null || !character.Active)
         {
@@ -154,7 +155,7 @@ public sealed class Plugin : IDalamudPlugin
         }
         if (character.CurrentBowelUrgeState == PottyTrainer.Configuration.UrgeState.None)
         {
-            ChatGui.PrintWithTag("You don't feel the urge to poop right now.");
+            ChatGui.PrintWithTag(chatMessageBuilder.GenerateMessageByKey("ChatMessages.Action.Poop.Failed"));
             return;
         }
         Simulator.Poop(PlayerState, Configuration.GetCurrentCharacter()!, true);
@@ -165,45 +166,25 @@ public sealed class Plugin : IDalamudPlugin
         var character = Configuration.GetCurrentCharacter();
         if (character == null || !character.Active)
         {
-            ChatGui.Print("Your character's bodily functions aren't active right now.");
+            ChatGui.Print(chatMessageBuilder.GenerateMessageByKey("ChatMessages.Action.Check.Inactive"));
             return;
         }
 
-        var message = outOfCharacter ?
-            new SeStringBuilder()
-                .AddText("You check if ")
-                .Add(Simulator.GetPlayerPayload(PlayerState))
-                .AddText(" needs to go potty...")
-            .BuiltString
-            : new SeStringBuilder()
-                .Add(Simulator.GetPlayerPayload(PlayerState))
-                .AddText(" checks if they need to go potty...")
-                .BuiltString;
-        ChatGui.PrintWithTag(message);
+        ChatGui.PrintWithTag(chatMessageBuilder.GenerateMessageByKey($"ChatMessages.Action.Check.{(outOfCharacter ? "OutOfCharacter" : "InCharacter")}"));
         if (outOfCharacter)
         {
             var actualPeeUrge = Simulator.ComputeUrgeState(character.CurrentBladder, 70);
-            var peeMessage = Simulator.GetChatUrgeMessage(character.CurrentBladderUrgeState, true, actualPeeUrge);
-            ChatGui.Print(peeMessage);
+            ChatGui.Print(Simulator.GetChatUrgeMessage(character.CurrentBladderUrgeState, true, actualPeeUrge));
             if (character.CurrentBladderAwarenessThreshold >= 100)
             {
-                ChatGui.Print(new SeStringBuilder()
-                    .AddUiForeground((ushort)UiColors.Orange)
-                    .AddText("(They will eventually pee themselves without warning!)")
-                    .AddUiForegroundOff()
-                    .BuiltString);
+                ChatGui.Print(chatMessageBuilder.GenerateMessageByKey("ChatMessages.Action.Check.NoPeeWarning"));
             }
 
             var actualPoopUrge = Simulator.ComputeUrgeState(character.CurrentBowel, 70);
-            var poopMessage = Simulator.GetChatUrgeMessage(character.CurrentBowelUrgeState, false, actualPoopUrge);
-            ChatGui.Print(poopMessage);
+            ChatGui.Print(Simulator.GetChatUrgeMessage(character.CurrentBowelUrgeState, false, actualPoopUrge));
             if (character.CurrentBowelAwarenessThreshold >= 100)
             {
-                ChatGui.Print(new SeStringBuilder()
-                    .AddUiForeground((ushort)UiColors.Orange)
-                    .AddText("(They will eventually poop themselves without warning!)")
-                    .AddUiForegroundOff()
-                    .BuiltString);
+                ChatGui.Print(chatMessageBuilder.GenerateMessageByKey("ChatMessages.Action.Check.NoPoopWarning"));
             }
         }
         else
