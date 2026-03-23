@@ -153,9 +153,9 @@
         "message": "{target} can't hold it any longer! {tpronoun:sc} is now {fgcolor:brown}{glow:yellow}pooping{/glow}{/fgcolor}, whether {tpronoun:s} likes it or not!"
     },
     "ChatMessages.Action.Accident.Pee": {
-        "message": "{fgcolor:orange}({tpronoun:sc} didn't even know {tpronoun:s} needed to pee, and didn't have time to take off {tpronoun:p} underwear first! If {tpronoun:s} was wearing any, {tpronoun:s} just wet {tpronoun:r}!){/fgcolor}"
+        "message": "{fgcolor:orange}({tpronoun:sc} didn't even know {tpronoun:s} needed to pee!){/fgcolor}"
     },
     "ChatMessages.Action.Accident.Poop": {
-        "message": "{fgcolor:orange}({tpronoun:sc} didn't even know {tpronoun:s} needed to poop, and didn't have time to take off {tpronoun:p} underwear first! If {tpronoun:s} was wearing any, {tpronoun:s} just soiled {tpronoun:r}!){/fgcolor}"
+        "message": "{fgcolor:orange}({tpronoun:sc} didn't even know {tpronoun:s} needed to poop!){/fgcolor}"
     }
 }

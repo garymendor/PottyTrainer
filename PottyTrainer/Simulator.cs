@@ -1,6 +1,5 @@
 using System;
 using System.Threading;
-using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface.Colors;
 using Dalamud.IoC;
@@ -15,25 +14,25 @@ public interface ISimulator : IDisposable
 {
     void Start();
     void Stop();
-    void Pee(IPlayerState playerState, Character character, bool isVoluntary = false);
-    void Poop(IPlayerState playerState, Character character, bool isVoluntary = false);
+    void Pee(Character character, bool isVoluntary = false);
+    void Poop(Character character, bool isVoluntary = false);
 }
 
 [PluginInterface]
 public class Simulator : ISimulator
 {
     private readonly Plugin plugin;
-    private readonly IChatMessageBuilder chatMessageBuilder;
+    private readonly IMessages messages;
     private readonly Random random = new();
 
     private CancellationTokenSource? cancellationTokenSource;
 
     private bool disposedValue;
 
-    public Simulator(Plugin plugin)
+    public Simulator(Plugin plugin, IMessages messages)
     {
         this.plugin = plugin;
-        chatMessageBuilder = new ChatMessageBuilder(Plugin.PlayerState);
+        this.messages = messages;
     }
 
     private bool IsActive()
@@ -55,7 +54,6 @@ public class Simulator : ISimulator
 
         Stop();
 
-        Plugin.Log.Debug("Starting potty simulation.");
         ScheduleNextTick();
     }
 
@@ -72,7 +70,6 @@ public class Simulator : ISimulator
     {
         if (cancellationTokenSource != null)
         {
-            Plugin.Log.Debug("Stopping potty simulation.");
             cancellationTokenSource.Cancel();
             cancellationTokenSource.Dispose();
             cancellationTokenSource = null;
@@ -83,7 +80,6 @@ public class Simulator : ISimulator
     {
         if (cancellationTokenSource?.IsCancellationRequested == true || !IsActive())
         {
-            Plugin.Log.Debug("Aborting potty simulation.");
             return;
         }
 
@@ -109,7 +105,7 @@ public class Simulator : ISimulator
             character.CurrentBladder += (float)bladderIncrease / 100;
             if (character.CurrentBladder > 100)
             {
-                Pee(playerState, character);
+                Pee(character);
             }
             else
             {
@@ -117,7 +113,7 @@ public class Simulator : ISimulator
                 if (newUrgeState != character.CurrentBladderUrgeState)
                 {
                     character.CurrentBladderUrgeState = newUrgeState;
-                    Plugin.ChatGui.PrintWithTag(GetChatUrgeMessage(newUrgeState, true));
+                    messages.PrintChatUrgeMessage(newUrgeState, true, includeTag: true);
                 }
             }
         }
@@ -136,7 +132,7 @@ public class Simulator : ISimulator
             character.CurrentBowel += (float)bowelIncrease / 100;
             if (character.CurrentBowel > 100)
             {
-                Poop(playerState, character);
+                Poop(character);
             }
             else
             {
@@ -144,7 +140,7 @@ public class Simulator : ISimulator
                 if (newUrgeState != character.CurrentBowelUrgeState)
                 {
                     character.CurrentBowelUrgeState = newUrgeState;
-                    Plugin.ChatGui.PrintWithTag(GetChatUrgeMessage(newUrgeState, false));
+                    messages.PrintChatUrgeMessage(newUrgeState, false, includeTag: true);
                 }
             }
         }
@@ -160,25 +156,27 @@ public class Simulator : ISimulator
         ScheduleNextTick(); // Schedule next tick
     }
 
-    public void Pee(IPlayerState playerState, Character character, bool isVoluntary = false)
+    public void Pee(Character character, bool isVoluntary = false)
     {
-        Plugin.ChatGui.PrintWithTag(chatMessageBuilder.GenerateMessageByKey($"ChatMessages.Action.Pee.{(isVoluntary ? "Voluntary" : "Involuntary")}"));
         if (character.CurrentBladderUrgeState == UrgeState.None)
         {
-            Plugin.ChatGui.Print(chatMessageBuilder.GenerateMessageByKey("ChatMessages.Action.Accident.Pee"));
+            messages.PrintPeeFailed();
+            return;
         }
+        messages.PrintPeeActionMessage(character, isVoluntary);
         character.CurrentBladder = 0;
         character.CurrentBladderAwarenessThreshold = random.Next(character.BladderAwarenessThresholdMin, character.BladderAwarenessThresholdMax + 1);
         character.CurrentBladderUrgeState = UrgeState.None;
     }
 
-    public void Poop(IPlayerState playerState, Character character, bool isVoluntary = false)
+    public void Poop(Character character, bool isVoluntary = false)
     {
-        Plugin.ChatGui.PrintWithTag(chatMessageBuilder.GenerateMessageByKey($"ChatMessages.Action.Poop.{(isVoluntary ? "Voluntary" : "Involuntary")}"));
-        if (character.CurrentBowelUrgeState == UrgeState.None)
+        if (character.CurrentBowelUrgeState == PottyTrainer.Configuration.UrgeState.None)
         {
-            Plugin.ChatGui.Print(chatMessageBuilder.GenerateMessageByKey("ChatMessages.Action.Accident.Poop"));
+            messages.PrintPoopFailed();
+            return;
         }
+        messages.PrintPoopActionMessage(character, isVoluntary);
         character.CurrentBowel = 0;
         character.CurrentBowelAwarenessThreshold = random.Next(character.BowelAwarenessThresholdMin, character.BowelAwarenessThresholdMax + 1);
         character.CurrentBowelUrgeState = UrgeState.None;
@@ -203,26 +201,6 @@ public class Simulator : ISimulator
 
         return UrgeState.Warning;
     }
-
-    public SeString GetChatUrgeMessage(UrgeState urgeState, bool isPeeing, UrgeState? actualUrgeState = null)
-        => chatMessageBuilder.GenerateMessageByKey(GetChatUrgeMessageKey(urgeState, isPeeing, actualUrgeState));
-
-    public string GetChatUrgeMessageKey(UrgeState urgeState, bool isPeeing, UrgeState? actualUrgeState = null)
-        => urgeState switch
-        {
-            UrgeState.Warning => "ChatMessages.Urge.IC.Warning.",
-            UrgeState.Danger => "ChatMessages.Urge.IC.Danger.",
-            UrgeState.Bursting => "ChatMessages.Urge.IC.Bursting.",
-            UrgeState.None or _ =>
-                (actualUrgeState == null) ? "ChatMessages.Urge.IC.None."
-                : actualUrgeState.Value switch
-                {
-                    UrgeState.Warning => "ChatMessages.Urge.OOC.Warning.",
-                    UrgeState.Danger => "ChatMessages.Urge.OOC.Danger.",
-                    UrgeState.Bursting => "ChatMessages.Urge.OOC.Bursting.",
-                    UrgeState.None or _ => "ChatMessages.Urge.OOC.None.",
-                }
-        } + (isPeeing ? "Pee" : "Poop");
 
     public static PlayerPayload GetPlayerPayload(IPlayerState playerState)
     {
