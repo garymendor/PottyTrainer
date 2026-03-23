@@ -110,7 +110,7 @@ public class MainWindow : Window, IDisposable
         }
         else if (ImGui.Button("Pee now!"))
         {
-            plugin.Simulator.Pee(playerState, character, true);
+            plugin.Simulator.Pee(character, true);
             plugin.Configuration.Save();
         }
 
@@ -130,7 +130,7 @@ public class MainWindow : Window, IDisposable
         }
         else if (ImGui.Button("Poop now!"))
         {
-            plugin.Simulator.Poop(playerState, character, true);
+            plugin.Simulator.Poop(character, true);
             plugin.Configuration.Save();
         }
 

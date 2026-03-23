@@ -2,7 +2,6 @@
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using System.IO;
-using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using PottyTrainer.Windows;
@@ -32,6 +31,7 @@ public sealed class Plugin : IDalamudPlugin
     private DebugWindow DebugWindow { get; init; }
     public Simulator Simulator { get; init; }
     private readonly IChatMessageBuilder chatMessageBuilder;
+    private readonly IMessages messages;
 
     public Plugin()
     {
@@ -40,8 +40,9 @@ public sealed class Plugin : IDalamudPlugin
         var localization = new LocWrapper(locDirectory, "PottyTrainer.");
         localization.SetupWithUiCulture();
         chatMessageBuilder = new ChatMessageBuilder(PlayerState);
+        messages = new Messages(ChatGui, chatMessageBuilder);
 
-        Simulator = new Simulator(this);
+        Simulator = new Simulator(this, messages);
 
         // You might normally want to embed resources and load them from the manifest stream
         var goatImagePath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "goat.png");
@@ -139,12 +140,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             return;
         }
-        if (character.CurrentBladderUrgeState == PottyTrainer.Configuration.UrgeState.None)
-        {
-            ChatGui.PrintWithTag(chatMessageBuilder.GenerateMessageByKey("ChatMessages.Action.Pee.Failed"));
-            return;
-        }
-        Simulator.Pee(PlayerState, Configuration.GetCurrentCharacter()!, true);
+        Simulator.Pee(character, true);
     }
 
     private void Poop()    {
@@ -153,12 +149,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             return;
         }
-        if (character.CurrentBowelUrgeState == PottyTrainer.Configuration.UrgeState.None)
-        {
-            ChatGui.PrintWithTag(chatMessageBuilder.GenerateMessageByKey("ChatMessages.Action.Poop.Failed"));
-            return;
-        }
-        Simulator.Poop(PlayerState, Configuration.GetCurrentCharacter()!, true);
+        Simulator.Poop(character!, true);
     }
 
     private void PottyCheck(bool outOfCharacter = false)
@@ -174,14 +165,14 @@ public sealed class Plugin : IDalamudPlugin
         if (outOfCharacter)
         {
             var actualPeeUrge = Simulator.ComputeUrgeState(character.CurrentBladder, 70);
-            ChatGui.Print(Simulator.GetChatUrgeMessage(character.CurrentBladderUrgeState, true, actualPeeUrge));
+            messages.PrintChatUrgeMessage(character.CurrentBladderUrgeState, true, actualPeeUrge);
             if (character.CurrentBladderAwarenessThreshold >= 100)
             {
                 ChatGui.Print(chatMessageBuilder.GenerateMessageByKey("ChatMessages.Action.Check.NoPeeWarning"));
             }
 
             var actualPoopUrge = Simulator.ComputeUrgeState(character.CurrentBowel, 70);
-            ChatGui.Print(Simulator.GetChatUrgeMessage(character.CurrentBowelUrgeState, false, actualPoopUrge));
+            messages.PrintChatUrgeMessage(character.CurrentBowelUrgeState, false, actualPoopUrge);
             if (character.CurrentBowelAwarenessThreshold >= 100)
             {
                 ChatGui.Print(chatMessageBuilder.GenerateMessageByKey("ChatMessages.Action.Check.NoPoopWarning"));
@@ -189,8 +180,8 @@ public sealed class Plugin : IDalamudPlugin
         }
         else
         {
-            ChatGui.Print(Simulator.GetChatUrgeMessage(character.CurrentBladderUrgeState, true));
-            ChatGui.Print(Simulator.GetChatUrgeMessage(character.CurrentBowelUrgeState, false));
+            messages.PrintChatUrgeMessage(character.CurrentBladderUrgeState, true);
+            messages.PrintChatUrgeMessage(character.CurrentBowelUrgeState, false);
         }
     }
     
